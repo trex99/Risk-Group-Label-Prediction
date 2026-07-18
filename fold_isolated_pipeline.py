@@ -1,4 +1,4 @@
-"""Leakage-safe feature and evaluation utilities for the reviewer reanalysis.
+"""Leakage-safe feature and evaluation utilities for the manuscript analysis.
 
 The central rule is that a fold's validation rows are never used as history
 sources for either training or validation features.  Every history statistic is

@@ -334,7 +334,7 @@ def main() -> None:
             for _, row in table10_raw.iterrows()
         ]
     )
-    # Preserve the percentage printed in the frozen v19 manuscript table.
+    # Preserve the percentage printed in the fixed manuscript table.
     # The full-precision verified value remains in ``table10_raw`` and the
     # source result CSV; this override applies only to the manuscript-facing
     # display artifact.

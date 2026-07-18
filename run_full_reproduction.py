@@ -1,4 +1,4 @@
-"""Run the complete leakage-safe v19 reproduction pipeline in stage order.
+"""Run the complete leakage-safe manuscript reproduction pipeline in stage order.
 
 The default run is intentionally long: it performs 100 Optuna trials for each
 model/fold before the outer, sensitivity, bootstrap, SHAP, table, and figure

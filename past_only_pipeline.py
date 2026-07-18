@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Past-only feature pipeline for the remake experiments.
+"""Past-only feature pipeline for the manuscript analysis.
 
 All cross-test ``other_test_*`` aggregates are computed from opposite-test
 records satisfying ``source.TestDate < target.TestDate``. The rest of the

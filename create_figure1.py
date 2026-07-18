@@ -1,4 +1,4 @@
-"""Recreate Figure 1 from the strict-month metadata used for manuscript v19."""
+"""Recreate Figure 1 from the strict-month metadata used for the manuscript."""
 
 import matplotlib.pyplot as plt
 import pandas as pd

@@ -1,4 +1,4 @@
-"""Build the strict prior-month base dataset used by the v19 experiments."""
+"""Build the strict prior-month base dataset used by the manuscript analysis."""
 
 from __future__ import annotations
 
