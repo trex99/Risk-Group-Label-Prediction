@@ -1,0 +1,4 @@
+﻿Time specification,Nested-CV AUC,Nested-CV PR-AUC,Temporal AUC,Temporal PR-AUC
+Full absolute-time features,0.719737,0.158234,0.692449,0.093923
+Remove current absolute-time variables,0.700138,0.132661,0.650682,0.084915
+Relative-time histories,0.703427,0.151804,0.694232,0.107706

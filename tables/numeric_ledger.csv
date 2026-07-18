@@ -1,0 +1,6 @@
+﻿Key,Score_fold_mean,AUC_fold_mean,PR-AUC_fold_mean,Brier_fold_mean,ECE_uniform_10_fold_mean,ECE_adaptive_10_fold_mean,delta_AUC_D_minus_B,delta_PR_AUC_D_minus_B
+primary_voting,0.146790,0.719737,0.158234,0.026126,0.000509,0.001181,,
+stepwise_model_b,0.147720,0.717899,0.155141,0.026155,0.000522,0.001006,,
+stepwise_model_c,0.191116,0.631724,0.044588,0.027874,0.000039,0.000937,,
+stepwise_model_d,0.146790,0.719737,0.158234,0.026126,0.000509,0.001181,0.0018385408354407717,0.00309210115299699
+temporal_voting,0.161863,0.692449,0.093923,0.025360,0.006990,0.007382,,

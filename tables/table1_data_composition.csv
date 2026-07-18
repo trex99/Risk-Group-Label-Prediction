@@ -1,0 +1,5 @@
+﻿Category,Rows,Main Variables,Description
+Test-level records,"944,767","Test_id, Test, Label",Test-level training data with risk-group label
+New Test (A) details,"647,241","PrimaryKey, Age, TestDate, A1~A9",Detailed results of the New Test (A)
+Qualification-Maintenance Test (B) details,"297,526","PrimaryKey, Age, TestDate, B1~B10",Detailed results of the Qualification-Maintenance Test (B)
+Class balance,2.8877%,Risk group,Low positive rate; imbalanced binary prediction task

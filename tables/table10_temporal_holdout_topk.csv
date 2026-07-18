@@ -1,0 +1,10 @@
+﻿Condition,Top-k,Label Rate,Lift,Cumulative Recall
+Full absolute-time features,1%,27.00%,10.61,10.61%
+Full absolute-time features,5%,11.37%,4.47,22.34%
+Full absolute-time features,10%,7.73%,3.04,30.38%
+Remove current absolute-time variables,1%,23.75%,9.33,9.33%
+Remove current absolute-time variables,5%,10.96%,4.30,21.52%
+Remove current absolute-time variables,10%,7.32%,2.88,28.76%
+Relative-time histories,1%,27.49%,10.80,10.80%
+Relative-time histories,5%,11.07%,4.35,21.73%
+Relative-time histories,10%,7.66%,3.01,30.09%

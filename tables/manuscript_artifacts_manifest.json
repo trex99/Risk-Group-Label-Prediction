@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "numeric_verification": "PASS",
+  "probability_source": "VotingClassifier.predict_proba",
+  "manuscript_version": "v19",
+  "tables": [
+    "table1_data_composition",
+    "table2_feature_groups",
+    "table3_single_models_and_votingclassifier",
+    "table4_feature_group_ablation",
+    "table5_stepwise_feature_sets",
+    "table6_incremental_value_cluster_bootstrap",
+    "table7_primarykey_disjoint_sensitivity",
+    "table8_nested_oof_topk",
+    "table9_time_specification_robustness",
+    "table10_temporal_holdout_topk",
+    "table11_test_type_subgroup_performance"
+  ]
+}

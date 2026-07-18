@@ -1,0 +1,7 @@
+﻿Condition,New Test (A) AUC,New Test (A) PR-AUC,Qualification-Maintenance Test (B) AUC,Qualification-Maintenance Test (B) PR-AUC
+Nested OOF full model,0.706512,0.117652,0.696542,0.195147
+Nested OOF Model B,0.703608,0.115906,0.693683,0.191991
+Nested OOF Model C,0.622886,0.035709,0.550172,0.050566
+Temporal full features,0.662214,0.050781,0.668744,0.125223
+Temporal no absolute time,0.614282,0.045939,0.652272,0.117816
+Temporal relative time,0.659710,0.053371,0.654264,0.145363

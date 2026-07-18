@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Reproduction runtime and raw data
+runtime/
+open_v2/
+data/open_v2/
+*.pkl
+*.npy
+*.npz
+*.csv.gz
+*.sqlite
+*.sqlite3
+*.db
+*.log
+*.pid
+
+# Editors and operating systems
+.idea/
+.vscode/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+*.key
+*.pem

@@ -1,0 +1,5 @@
+﻿Model,Feature set,Score,AUC,PR-AUC
+A,Age/timing only,0.171934,0.670020,0.054685
+B,Age/timing + history,0.147720,0.717899,0.155141
+C,Current cognitive/response summaries,0.191116,0.631724,0.044588
+D,Full features,0.146790,0.719737,0.158234

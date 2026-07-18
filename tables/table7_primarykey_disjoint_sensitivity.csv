@@ -1,0 +1,3 @@
+﻿Condition,Score,AUC,PR-AUC
+Main nested CV,0.146790,0.719737,0.158234
+PrimaryKey-disjoint CV,0.172733,0.670021,0.055630
