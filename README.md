@@ -312,7 +312,7 @@ VotingClassifier.predict_proba()
 - 수치 ledger
 - 논문 자원 manifest
 
-최종 표는 `tables`, 최종 그림은 `figures`에 저장한다. 논문 PDF 자체는 어떤 단계에서도 수정하지 않는다.
+최종 표는 `tables`, 최종 그림은 `figures`에 저장한다.
 
 ## 6. 25개 Python 파일의 역할
 
@@ -416,4 +416,4 @@ python verify_release.py
 
 이 저장소를 연구에 활용하는 경우 `CITATION.cff`의 저자 및 논문 정보를 인용한다. 대상 논문은 현재 「교통안전연구」 심사 중이며, 확정된 권·호·쪽수와 DOI는 게재 승인 후 갱신한다.
 
-코드는 `LICENSE`에 명시된 MIT License로 배포한다. 데이터와 논문 PDF는 코드 라이선스의 적용대상이 아니며, 원자료는 원 배포처의 이용조건을 따른다. 심사 중인 논문 PDF는 이 저장소에 포함하지 않는다.
+코드는 `LICENSE`에 명시된 MIT License로 배포한다. 데이터와 논문 PDF는 코드 라이선스의 적용대상이 아니며, 원자료는 원 배포처의 이용조건을 따른다.
