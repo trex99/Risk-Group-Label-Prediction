@@ -84,7 +84,7 @@ python run_full_reproduction.py --dry-run
 python run_full_reproduction.py --data-path "D:\data\open_v2\data"
 ```
 
-기본 실행은 각 모델·외부 fold마다 Optuna 100회를 수행한다. Intel Core Ultra 7 265K 20코어, 32GB급 메모리를 사용한 기준 실행에서 전체 경과시간은 약 60~70시간이었다. 원자료를 제외한 중간 산출물은 약 6.7GiB였으며, 원자료를 포함하면 약 8.5GiB가 필요했다. 임시파일과 동기화 여유를 고려하여 12~15GiB 이상의 여유공간을 권장한다.
+기본 실행은 각 모델·외부 fold마다 Optuna 100회를 수행한다. Intel Core Ultra 7 265K 20코어, 32GB급 메모리를 사용한 기준 실행에서 전체 경과시간은 약 60\~70시간이었다. 원자료를 제외한 중간 산출물은 약 6.7GiB였으며, 원자료를 포함하면 약 8.5GiB가 필요했다. 임시파일과 동기화 여유를 고려하여 12~15GiB 이상의 여유공간을 권장한다.
 
 ### 4.3 일부 단계만 실행
 
