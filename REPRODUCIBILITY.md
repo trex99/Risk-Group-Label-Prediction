@@ -40,7 +40,7 @@ data → protocol → tuning → outer → sensitivity
 - 난수 시드: 42
 - 무작위 계층 외부 5-fold
 - PrimaryKey 완전분리 외부 5-fold
-- 시간분할: 2016~2020년 학습, 2021~2022년 검증
+- 시간분할: 2016\~2020년 학습, 2021~2022년 검증
 - 내부 튜닝: 외부 학습 파티션 내부 3-fold
 - 모델: HGB, LightGBM, XGBoost, CatBoost
 - Optuna: 11개 외부 fold × 4개 모델 × 100 trial
@@ -60,7 +60,7 @@ data → protocol → tuning → outer → sensitivity
 
 ## 계산자원
 
-기준 장비는 Intel Core Ultra 7 265K 20코어와 32GB급 메모리였다.
+기준 장비는 Intel Core Ultra 7 265K 20코어와 32GB 메모리였다.
 
 - 전체 경과시간: 약 60~70시간
 - 누적 CPU 사용량 근사치: 약 430~500 코어시간
