@@ -245,22 +245,42 @@ def main() -> None:
     )
     table6 = save(table6, "table6_incremental_value_cluster_bootstrap")
 
-    group = pd.read_csv(RESULTS / "nested_evaluation" / "group_model_summary.csv")
-    table7_rows = []
-    for validation, source in [
-        ("Leakage-safe nested Stratified 5-fold", primary),
-        ("PrimaryKey StratifiedGroupKFold", group),
-    ]:
-        row = source.loc[source["model"].eq("voting")].iloc[0]
-        condition = "PrimaryKey-disjoint CV" if "Group" in validation else "Main nested CV"
-        table7_rows.append(
-            {
-                "Condition": condition,
-                "Score": row["Score_fold_mean"],
-                "AUC": row["AUC_fold_mean"],
-                "PR-AUC": row["PR-AUC_fold_mean"],
-            }
-        )
+    revised_table7 = HERE / "revision" / "tables" / "table_revision_table7_factorial_proposed.csv"
+    if revised_table7.exists():
+        revised = pd.read_csv(revised_table7).set_index("Condition")
+        table7_rows = []
+        for condition, label in [
+            ("stratified_no_history", "Individual-overlap CV, history excluded"),
+            ("stratified_training_history", "Individual-overlap CV, prior history"),
+            ("group_no_history", "PrimaryKey-disjoint CV, history excluded"),
+            ("group_prior_self_history", "PrimaryKey-disjoint CV, prior history"),
+        ]:
+            row = revised.loc[condition]
+            table7_rows.append(
+                {
+                    "Condition": label,
+                    "Score": row["Score"],
+                    "AUC": row["AUC"],
+                    "PR-AUC": row["PR-AUC"],
+                }
+            )
+    else:
+        group = pd.read_csv(RESULTS / "nested_evaluation" / "group_model_summary.csv")
+        table7_rows = []
+        for validation, source in [
+            ("Leakage-safe nested Stratified 5-fold", primary),
+            ("PrimaryKey StratifiedGroupKFold", group),
+        ]:
+            row = source.loc[source["model"].eq("voting")].iloc[0]
+            condition = "PrimaryKey-disjoint CV" if "Group" in validation else "Main nested CV"
+            table7_rows.append(
+                {
+                    "Condition": condition,
+                    "Score": row["Score_fold_mean"],
+                    "AUC": row["AUC_fold_mean"],
+                    "PR-AUC": row["PR-AUC_fold_mean"],
+                }
+            )
     table7 = save(pd.DataFrame(table7_rows), "table7_primarykey_disjoint_sensitivity")
 
     table8_raw = pd.read_csv(RESULTS / "nested_evaluation" / "stratified_voting_topk.csv")
@@ -377,7 +397,7 @@ def main() -> None:
         ("Table 4. Feature-Group Ablation", table4),
         ("Table 5. Stepwise Feature Sets", table5),
         ("Table 6. Incremental-Value Cluster Bootstrap", table6),
-        ("Table 7. PrimaryKey-Disjoint Sensitivity", table7),
+        ("Table 7. Sensitivity Analysis by Individual Separation and History Inclusion", table7),
         ("Table 8. Nested OOF Top-k", table8),
         ("Table 9. Time-Specification Robustness", table9),
         ("Table 10. Temporal Holdout Top-k", table10),

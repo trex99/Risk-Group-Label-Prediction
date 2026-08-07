@@ -1,0 +1,4 @@
+﻿Contrast,Left,Right,Delta Score,Delta Score std,Folds positive Score,Delta AUC,Delta AUC std,Folds positive AUC,Delta PR-AUC,Delta PR-AUC std,Folds positive PR-AUC
+Prior-history contribution when individual overlap is allowed,stratified_training_history,stratified_no_history,-0.022682840,0.001020551,0,0.044784340,0.001945666,5,0.101373594,0.004543383,5
+PrimaryKey separation effect without history,group_no_history,stratified_no_history,0.000369911,0.001303753,2,-0.000638430,0.002649087,3,-0.000142717,0.002250904,3
+Prior-history contribution among PrimaryKey-disjoint persons,group_prior_self_history,group_no_history,-0.027101434,0.001858923,0,0.053812376,0.003582088,5,0.119223322,0.005981505,5

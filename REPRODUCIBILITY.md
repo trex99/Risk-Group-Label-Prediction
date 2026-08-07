@@ -57,10 +57,13 @@ data → protocol → tuning → outer → sensitivity
 ```powershell
 python revision/run_revision_analyses.py
 python revision/tune_logistic_c.py
+PowerShell -ExecutionPolicy Bypass -File revision/run_primarykey_history_factorial_queue.ps1
+python revision/run_primarykey_history_factorial.py --condition summarize
+python build_manuscript_artifacts.py
 python revision/run_shap_fold_stability.py
 ```
 
-추가 SHAP 분석은 5개 외부 fold 각각에서 검증자료 2,000건과 학습 배경자료 100건을 사용한다. fold별 평균 절대 SHAP을 단순평균하고, 전체 피처 순위의 Spearman 상관계수와 상위 피처 집합의 일치율을 계산한다. 자세한 설정과 결과 파일은 [`revision/README.md`](revision/README.md)에 제시한다.
+[표 7] 민감도 분석은 개인 중복 허용 및 PrimaryKey 완전분리 조건에서 과거이력 포함 여부를 비교한다. 추가 SHAP 분석은 5개 외부 fold 각각에서 검증자료 2,000건과 학습 배경자료 100건을 사용한다. fold별 평균 절대 SHAP을 단순평균하고, 전체 피처 순위의 Spearman 상관계수와 상위 피처 집합의 일치율을 계산한다. 자세한 설정과 결과 파일은 [`revision/README.md`](revision/README.md)에 제시한다.
 
 ## 누수 차단 규칙
 

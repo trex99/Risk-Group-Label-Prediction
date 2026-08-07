@@ -1,6 +1,6 @@
 # 1차 심사 후 추가 분석
 
-이 디렉터리는 1차 심사 의견에 따라 수행한 추가 분석의 코드와 최종 산출물을 제공한다. 원자료, 검사건별 예측확률, fold별 이력 캐시 및 개별 SHAP 배열은 개인정보·용량 문제로 포함하지 않는다. 모든 분석은 기본 재현 파이프라인과 동일한 5개 외부 fold 및 누수 차단 이력 생성 규칙을 사용한다.
+이 디렉터리는 1차 심사 의견에 따라 수행한 추가 분석의 코드와 최종 산출물을 제공한다. 원자료, 검사건별 예측확률, fold별 이력 캐시 및 개별 SHAP 배열은 개인정보·용량 문제로 포함하지 않는다. 각 분석은 기본 재현 파이프라인과 동일한 5개 외부 fold를 사용하며, 이력 원천은 분석조건별로 명시한다.
 
 ## 분석 항목
 
@@ -24,6 +24,26 @@ C = 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000
 
 내부 평균 `Score`가 가장 낮은 값을 선택한다. 외부 fold별 선택값은 100, 10000, 0.1, 1, 1이었으며, 튜닝 전후의 결합 OOF 성능 차이는 사실상 없었다. 논문에 사용한 최종 비교표는 `tables/table_revision_model_comparison.csv`이다.
 
+### 개인 분리와 과거이력 포함 민감도
+
+`run_primarykey_history_factorial.py`는 미관측 개인 여부와 과거 이력 포함 여부에 따른 성능 차이를 비교한다. 논문 [표 7]은 다음 네 조건으로 구성한다.
+
+- 개인 중복 허용, 이력 제외
+- 개인 중복 허용, 과거이력 포함: 기존 주 분석의 최종 결합모델
+- PrimaryKey 완전분리, 이력 제외
+- PrimaryKey 완전분리, 과거이력 포함
+
+이력 제외 조건은 16개 이력 피처를 제거한 뒤 결측수 피처를 다시 계산한다. PrimaryKey 완전분리의 과거이력 포함 조건은 검증 대상자와 동일한 PrimaryKey의 엄격히 이전 검사기록을 이력 원천으로 사용하되, 해당 기록은 모델 적합자료에는 포함하지 않는다. 현재 [표 7]은 데이터셋에서 확인되는 과거 검사이력의 포함 여부를 비교하는 민감도 분석이며, 24개월 라벨 확정조건을 적용한 운영시점 분석은 포함하지 않는다.
+
+주요 결과는 다음과 같다.
+
+| Condition | Score | AUC | PR-AUC |
+|---|---:|---:|---:|
+| Individual-overlap CV, history excluded | 0.169473 | 0.674953 | 0.056860 |
+| Individual-overlap CV, prior history | 0.146790 | 0.719737 | 0.158234 |
+| PrimaryKey-disjoint CV, history excluded | 0.169843 | 0.674315 | 0.056717 |
+| PrimaryKey-disjoint CV, prior history | 0.142741 | 0.728127 | 0.175941 |
+
 ### 5-fold SHAP 해석과 순위 안정성
 
 `run_shap_fold_stability.py`는 각 외부 fold의 학습자료로 적합한 최종 VotingClassifier를 해당 외부 검증자료에 설명한다.
@@ -44,6 +64,9 @@ C = 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000
 ```powershell
 python revision/run_revision_analyses.py
 python revision/tune_logistic_c.py
+PowerShell -ExecutionPolicy Bypass -File revision/run_primarykey_history_factorial_queue.ps1
+python revision/run_primarykey_history_factorial.py --condition summarize
+python build_manuscript_artifacts.py
 python revision/run_shap_fold_stability.py
 ```
 
@@ -53,6 +76,9 @@ python revision/run_shap_fold_stability.py
 $env:TRANSPORT_PAPER_RUNTIME="D:\transport_paper_runtime"
 python revision/run_revision_analyses.py
 python revision/tune_logistic_c.py
+PowerShell -ExecutionPolicy Bypass -File revision/run_primarykey_history_factorial_queue.ps1
+python revision/run_primarykey_history_factorial.py --condition summarize
+python build_manuscript_artifacts.py
 python revision/run_shap_fold_stability.py
 ```
 
@@ -80,6 +106,13 @@ python revision/run_shap_fold_stability.py --force
 - `tables/table_revision_shap_pairwise_spearman.csv`: fold 쌍별 순위상관
 - `tables/table_revision_shap_topk_overlap.csv`: 상위 5·10·20개 피처 일치도
 - `tables/table_revision_shap_fold_runtimes.csv`: fold별 계산시간
+
+### 개인 분리와 과거이력
+
+- `tables/table_revision_table7_factorial_proposed.csv`: 논문 [표 7]의 네 조건
+- `tables/table_revision_primarykey_history_factorial.csv`: fold 평균과 표준편차를 포함한 상세 결과
+- `tables/table_revision_primarykey_history_factorial_contrasts.csv`: 조건 간 성능 차이
+- `tables/primarykey_history_factorial_verification.json`: 저장 예측값을 이용한 행 수·중복·지표 재검산
 
 ## 그림
 

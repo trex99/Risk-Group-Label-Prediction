@@ -60,12 +60,14 @@ All final ensemble probabilities come from VotingClassifier.predict_proba().
 | ΔAUC (Model D − Model B) | 0.001935 | 0.001913 | 0.001194 ~ 0.002596 |
 | ΔPR-AUC (Model D − Model B) | 0.002823 | 0.002845 | 0.002082 ~ 0.003634 |
 
-## Table 7. PrimaryKey-Disjoint Sensitivity
+## Table 7. Sensitivity Analysis by Individual Separation and History Inclusion
 
 | Condition | Score | AUC | PR-AUC |
 |---|---|---|---|
-| Main nested CV | 0.146790 | 0.719737 | 0.158234 |
-| PrimaryKey-disjoint CV | 0.172733 | 0.670021 | 0.055630 |
+| Individual-overlap CV, history excluded | 0.169473 | 0.674953 | 0.056860 |
+| Individual-overlap CV, prior history | 0.146790 | 0.719737 | 0.158234 |
+| PrimaryKey-disjoint CV, history excluded | 0.169843 | 0.674315 | 0.056717 |
+| PrimaryKey-disjoint CV, prior history | 0.142741 | 0.728127 | 0.175941 |
 
 ## Table 8. Nested OOF Top-k
 

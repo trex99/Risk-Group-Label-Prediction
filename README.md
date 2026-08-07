@@ -324,6 +324,7 @@ VotingClassifier.predict_proba()
 
 - `DummyClassifier`와 로지스틱 회귀 기준모델의 외부 5-fold 평가
 - 3-fold 내부 교차검증을 이용한 로지스틱 회귀 규제강도 `C` 튜닝
+- 미관측 개인 여부와 과거 이력 포함 여부에 따른 [표 7] 민감도 분석
 - 5개 외부 fold의 OOF SHAP 집계와 중요도 순위 안정성 평가
 - fold별 평균 절대 SHAP의 단순평균 및 표준편차 시각화
 

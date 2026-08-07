@@ -26,6 +26,8 @@ REQUIRED = [
     "revision/README.md",
     "revision/run_revision_analyses.py",
     "revision/tune_logistic_c.py",
+    "revision/run_primarykey_history_factorial.py",
+    "revision/run_primarykey_history_factorial_queue.ps1",
     "revision/run_shap_fold_stability.py",
     "checksums.sha256",
 ]
