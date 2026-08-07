@@ -11,6 +11,7 @@ env/
 
 # Reproduction runtime and raw data
 runtime/
+revision/tmp/
 open_v2/
 data/open_v2/
 *.pkl

@@ -1,0 +1,6 @@
+﻿status,outer_fold,random_seed,train_rows,validation_rows,explained_rows,background_rows,feature_count,algorithm,max_evals,prediction_source,matrix_seconds,model_fit_seconds,shap_seconds,total_seconds
+COMPLETE,1,42,755813,188954,2000,100,37,permutation SHAP,75,fold-specific VotingClassifier.predict_proba,3.050116500002332,69.84895020001568,283.34796739998274,356.41331520001404
+COMPLETE,2,43,755813,188954,2000,100,37,permutation SHAP,75,fold-specific VotingClassifier.predict_proba,2.84395970008336,31.082879800000228,356.6542397000594,390.7438615000574
+COMPLETE,3,44,755814,188953,2000,100,37,permutation SHAP,75,fold-specific VotingClassifier.predict_proba,2.827483500004746,24.509872100083157,317.9365780000808,345.45342270005494
+COMPLETE,4,45,755814,188953,2000,100,37,permutation SHAP,75,fold-specific VotingClassifier.predict_proba,2.8578018998960033,27.13789839996025,403.7031958999578,433.86177119996864
+COMPLETE,5,46,755814,188953,2000,100,37,permutation SHAP,75,fold-specific VotingClassifier.predict_proba,2.795379800023511,33.15630649996456,246.8997084000148,283.0008639000589

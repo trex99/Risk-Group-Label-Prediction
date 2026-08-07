@@ -2,10 +2,11 @@
 
 ## 재현 수준
 
-본 공개본은 두 수준의 확인을 지원한다.
+본 공개본은 세 수준의 확인을 지원한다.
 
 1. 자원 검증: 공개된 코드의 구문, 필수파일과 최종 표·그림의 SHA-256을 확인한다.
 2. 전체 재현: 원자료에서 시작하여 Optuna 튜닝, 외부평가, 민감도 분석, Bootstrap, SHAP, 표·그림 생성을 다시 수행한다.
+3. 심사 후 분석 재현: 기본 재현 산출물을 이용하여 기준모델 튜닝과 5-fold SHAP 분석을 수행한다.
 
 ## 빠른 자원 검증
 
@@ -49,6 +50,18 @@ data → protocol → tuning → outer → sensitivity
 - 군집 Bootstrap: PrimaryKey 단위 500회
 - SHAP: 외부 1번 fold, 검증 2,000건, 배경 100건
 
+## 1차 심사 후 추가 분석
+
+기본 재현이 완료된 뒤 저장소 루트에서 다음 명령을 순서대로 실행한다.
+
+```powershell
+python revision/run_revision_analyses.py
+python revision/tune_logistic_c.py
+python revision/run_shap_fold_stability.py
+```
+
+추가 SHAP 분석은 5개 외부 fold 각각에서 검증자료 2,000건과 학습 배경자료 100건을 사용한다. fold별 평균 절대 SHAP을 단순평균하고, 전체 피처 순위의 Spearman 상관계수와 상위 피처 집합의 일치율을 계산한다. 자세한 설정과 결과 파일은 [`revision/README.md`](revision/README.md)에 제시한다.
+
 ## 누수 차단 규칙
 
 - 이력은 `source.TestDate < target.TestDate`를 만족하는 기록만 사용한다.
@@ -72,7 +85,7 @@ CPU, 메모리, 저장장치 및 패키지 빌드에 따라 실행시간은 달�
 
 ## 최종 산출물 비교
 
-`checksums.sha256`은 공개된 `figures`와 `tables`의 최종 자원을 대상으로 한다. 전체 재현이 끝난 뒤 다음 명령으로 공개 기준값과 비교할 수 있다.
+`checksums.sha256`은 공개된 `figures`, `tables`, `revision`의 최종 자원을 대상으로 한다. 전체 재현이 끝난 뒤 다음 명령으로 공개 기준값과 비교할 수 있다.
 
 ```powershell
 python verify_release.py

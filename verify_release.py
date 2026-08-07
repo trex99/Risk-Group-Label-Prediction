@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 
 
 ROOT = Path(__file__).resolve().parent
@@ -22,6 +23,10 @@ REQUIRED = [
     "fold_isolated_pipeline.py",
     "past_only_pipeline.py",
     "build_manuscript_artifacts.py",
+    "revision/README.md",
+    "revision/run_revision_analyses.py",
+    "revision/tune_logistic_c.py",
+    "revision/run_shap_fold_stability.py",
     "checksums.sha256",
 ]
 FORBIDDEN_SUFFIXES = {
@@ -44,7 +49,11 @@ def main() -> None:
         if not (ROOT / relative).exists():
             failures.append(f"missing required file: {relative}")
 
-    python_files = sorted(ROOT.glob("*.py"))
+    python_files = sorted(
+        path
+        for path in ROOT.rglob("*.py")
+        if not any(part in {"runtime", ".git", "__pycache__"} for part in path.relative_to(ROOT).parts)
+    )
     for path in python_files:
         try:
             source = path.read_text(encoding="utf-8-sig")
@@ -60,10 +69,23 @@ def main() -> None:
             failures.append(f"hard-coded local path: {path.name}")
 
     excluded_roots = {"runtime", ".git", "__pycache__"}
-    tracked_candidates = [
-        path for path in ROOT.rglob("*")
-        if path.is_file() and not any(part in excluded_roots for part in path.relative_to(ROOT).parts)
-    ]
+    if (ROOT / ".git").exists():
+        listed = subprocess.run(
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout.decode("utf-8").split("\0")
+        tracked_candidates = [ROOT / relative for relative in listed if relative]
+    else:
+        tracked_candidates = [
+            path
+            for path in ROOT.rglob("*")
+            if path.is_file()
+            and not any(
+                part in excluded_roots for part in path.relative_to(ROOT).parts
+            )
+        ]
     for path in tracked_candidates:
         relative = path.relative_to(ROOT)
         if path.name in FORBIDDEN_NAMES:

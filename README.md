@@ -297,7 +297,7 @@ VotingClassifier.predict_proba()
 - 난수 시드: 42
 - 예측함수: `VotingClassifier.predict_proba()`
 
-이 단계에서 그림 3과 SHAP 중요도 자료를 생성한다.
+이 단계에서 최초 제출본의 그림 3과 SHAP 중요도 자료를 생성한다. 1차 심사 후 수행한 5-fold SHAP 확장분석은 `revision` 디렉터리에서 별도로 재현한다.
 
 ### 5.9 논문 자원 생성: `artifacts`
 
@@ -314,7 +314,22 @@ VotingClassifier.predict_proba()
 
 최종 표는 `tables`, 최종 그림은 `figures`에 저장한다.
 
-## 6. 25개 Python 파일의 역할
+### 5.10 1차 심사 후 추가 분석
+
+관련 디렉터리:
+
+- [`revision/`](revision/)
+
+심사 의견에 따라 다음 분석을 추가하였다.
+
+- `DummyClassifier`와 로지스틱 회귀 기준모델의 외부 5-fold 평가
+- 3-fold 내부 교차검증을 이용한 로지스틱 회귀 규제강도 `C` 튜닝
+- 5개 외부 fold의 OOF SHAP 집계와 중요도 순위 안정성 평가
+- fold별 평균 절대 SHAP의 단순평균 및 표준편차 시각화
+
+코드, 실행 순서, 최종 결과표와 그림은 [`revision/README.md`](revision/README.md)에 정리하였다. 대용량 예측값·이력 캐시·개별 SHAP 배열은 공개본에 포함하지 않는다.
+
+## 6. 기본 재현 25개 Python 파일의 역할
 
 | 구분 | 파일 | 역할 |
 |---|---|---|
@@ -353,6 +368,7 @@ VotingClassifier.predict_proba()
 ```text
 figures/   # 그림 1~4 및 그림 2 편집용 SVG
 tables/    # 표 1~11, ledger, manifest, 검증 기록
+revision/  # 1차 심사 후 추가 분석 코드, 표, 그림
 ```
 
 그림 2는 분석결과 그래프가 아니라 연구절차를 정리한 편집 도식이다. 따라서 분석 코드로 자동 생성하지 않고 기존 PNG와 편집용 SVG를 최종 자원으로 유지한다.

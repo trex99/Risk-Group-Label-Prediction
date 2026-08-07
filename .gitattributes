@@ -13,3 +13,5 @@
 # bytes across Windows, macOS, and Linux checkouts.
 figures/** -text
 tables/** -text
+revision/figures/** -text
+revision/tables/** binary
