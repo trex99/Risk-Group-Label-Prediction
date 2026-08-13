@@ -36,9 +36,9 @@ def require_verified() -> dict:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("status") != "PASS":
         raise ValueError("Two-pass numerical verification is not PASS")
-    shap = RESULTS / "shap_outer1_votingclassifier_manifest.json"
+    shap = HERE / "revision" / "tmp" / "shap_stability_manifest.json"
     if not shap.exists() or json.loads(shap.read_text(encoding="utf-8")).get("status") != "COMPLETE":
-        raise ValueError("Final VotingClassifier SHAP is not complete")
+        raise ValueError("Final five-fold VotingClassifier SHAP is not complete")
     return payload
 
 
@@ -165,23 +165,36 @@ def main() -> None:
                 },
                 {
                     "Feature Group": "Missing-count feature",
-                    "Representative Variables": "missing-count feature",
-                    "Interpretation": "Missingness or nonresponse pattern in test-derived features",
+                    "Representative Variables": "isna_sum",
+                    "Interpretation": "Number of missing final features after fold-specific history reconstruction",
                 },
             ]
         ),
         "table2_feature_groups",
     )
 
-    # Table 3: four fitted estimators inside VotingClassifier and final voting output.
+    # Table 3: baselines, four fitted estimators, and final voting output.
     primary = pd.read_csv(RESULTS / "nested_evaluation" / "stratified_model_summary.csv")
     model_labels = {
         "hgb": "HistGradientBoosting", "lgb": "LightGBM", "xgb": "XGBoost",
         "cb": "CatBoost", "voting": "Soft-voting VotingClassifier",
     }
-    table3 = primary[["model", *FOLD_METRICS]].copy()
-    table3.insert(1, "Model", table3["model"].map(model_labels))
-    table3 = table3.drop(columns="model").rename(columns=DISPLAY_NAMES)
+    final_comparison = HERE / "revision" / "tables" / "table_revision_model_comparison.csv"
+    if not final_comparison.exists():
+        raise FileNotFoundError(
+            "Final baseline comparison is missing; run revision/tune_logistic_c.py first"
+        )
+    table3 = pd.read_csv(final_comparison)
+    expected_models = [
+        "DummyClassifier",
+        "LogisticRegression",
+        "HistGradientBoosting",
+        "LightGBM",
+        "XGBoost",
+        "CatBoost",
+        "Soft-voting VotingClassifier",
+    ]
+    table3 = table3.set_index("Model").loc[expected_models].reset_index()
     table3 = save(table3, "table3_single_models_and_votingclassifier")
 
     table4 = condition_table(
@@ -190,7 +203,7 @@ def main() -> None:
             "full": "All features",
             "without_accuracy_error": "Remove accuracy/error statistics",
             "without_age_time": "Remove age/timing",
-            "without_history": "Remove past/cross-test history",
+            "without_history": "Remove past/cross-test history features",
             "without_missingness": "Remove missing-count feature",
             "without_response_time": "Remove response-time statistics",
         },
@@ -250,15 +263,18 @@ def main() -> None:
         revised = pd.read_csv(revised_table7).set_index("Condition")
         table7_rows = []
         for condition, label in [
-            ("stratified_no_history", "Individual-overlap CV, history excluded"),
-            ("stratified_training_history", "Individual-overlap CV, prior history"),
-            ("group_no_history", "PrimaryKey-disjoint CV, history excluded"),
-            ("group_prior_self_history", "PrimaryKey-disjoint CV, prior history"),
+            ("stratified_training_history", "Main nested CV"),
+            ("stratified_no_history", "Main outer folds"),
+            ("group_no_history", "PrimaryKey-disjoint CV"),
         ]:
             row = revised.loc[condition]
             table7_rows.append(
                 {
                     "Condition": label,
+                    "History Features": (
+                        "Included" if condition == "stratified_training_history" else "Excluded"
+                    ),
+                    "Features": int(row["Features"]),
                     "Score": row["Score"],
                     "AUC": row["AUC"],
                     "PR-AUC": row["PR-AUC"],
@@ -276,6 +292,8 @@ def main() -> None:
             table7_rows.append(
                 {
                     "Condition": condition,
+                    "History Features": "Included",
+                    "Features": 37,
                     "Score": row["Score_fold_mean"],
                     "AUC": row["AUC_fold_mean"],
                     "PR-AUC": row["PR-AUC_fold_mean"],
@@ -393,11 +411,11 @@ def main() -> None:
     sections = [
         ("Table 1. Composition of Analysis Data", table1),
         ("Table 2. Feature Groups Used in Model", table2),
-        ("Table 3. Single Models and VotingClassifier", table3),
+        ("Table 3. Performance of Baselines, Single Models and VotingClassifier", table3),
         ("Table 4. Feature-Group Ablation", table4),
         ("Table 5. Stepwise Feature Sets", table5),
         ("Table 6. Incremental-Value Cluster Bootstrap", table6),
-        ("Table 7. Sensitivity Analysis by Individual Separation and History Inclusion", table7),
+        ("Table 7. Sensitivity Analysis of Prior Test History and PrimaryKey Separation", table7),
         ("Table 8. Nested OOF Top-k", table8),
         ("Table 9. Time-Specification Robustness", table9),
         ("Table 10. Temporal Holdout Top-k", table10),
@@ -449,7 +467,7 @@ def main() -> None:
         "",
         f"> 누수 차단 중첩 5-fold 검증에서 최종 VotingClassifier는 AUC {f4(voting['AUC_fold_mean'])}, PR-AUC {f4(voting['PR-AUC_fold_mean'])}를 보였다. 연령·검사시점과 과거 검사이력을 사용한 Model B의 AUC와 PR-AUC는 각각 {f4(model_b['AUC_fold_mean'])}, {f4(model_b['PR-AUC_fold_mean'])}였고, 현재 인지·반응 요약통계를 추가한 전체모형은 각각 {f4(model_d['AUC_fold_mean'])}, {f4(model_d['PR-AUC_fold_mean'])}로 AUC {delta_auc:+.4f}, PR-AUC {delta_pr:+.4f} 변화하였다. {increment_interpretation}",
         "",
-        f"> 2016~2020년 학습·2021~2022년 검증의 시간분할에서는 AUC {f4(temporal_voting['AUC_fold_mean'])}, PR-AUC {f4(temporal_voting['PR-AUC_fold_mean'])}였으며, 예측확률 상위 5% 검사건의 라벨률은 {pct(temporal_full_top5['Label Rate'])}, lift는 {temporal_full_top5['Lift']:.2f}배, recall은 {pct(temporal_full_top5['Cumulative Recall'])}였다.",
+        f"> 2016–2020년 학습·2021–2022년 검증의 시간분할에서는 AUC {f4(temporal_voting['AUC_fold_mean'])}, PR-AUC {f4(temporal_voting['PR-AUC_fold_mean'])}였으며, 예측확률 상위 5% 검사건의 라벨률은 {pct(temporal_full_top5['Label Rate'])}, lift는 {temporal_full_top5['Lift']:.2f}배, recall은 {pct(temporal_full_top5['Cumulative Recall'])}였다.",
         "",
         "## 단일모델과 VotingClassifier",
         "",
@@ -488,7 +506,7 @@ def main() -> None:
         "status": "PASS",
         "numeric_verification": verification["status"],
         "probability_source": "VotingClassifier.predict_proba",
-        "manuscript_version": "v19",
+        "manuscript_version": "v20-final",
         "tables": [stem for stem in [
             "table1_data_composition", "table2_feature_groups",
             "table3_single_models_and_votingclassifier", "table4_feature_group_ablation",

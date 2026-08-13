@@ -18,15 +18,6 @@
       "PR-AUC_fold_mean_recomputed": 0.05671720311263959,
       "AUC_combined": 0.6737845679351713,
       "PR-AUC_combined": 0.05637791095566613
-    },
-    {
-      "condition": "group_prior_self_history",
-      "rows": 944767,
-      "unique_rows": 944767,
-      "AUC_fold_mean_recomputed": 0.7281270339190132,
-      "PR-AUC_fold_mean_recomputed": 0.17594052510691816,
-      "AUC_combined": 0.7277529093479844,
-      "PR-AUC_combined": 0.17508331641209632
     }
   ],
   "checks": [
@@ -34,7 +25,6 @@
     "944,767 unique row indices per condition",
     "AUC and PR-AUC recomputed directly from saved predictions",
     "PrimaryKey overlap rejected for group folds",
-    "no-history missing count excludes history-column missingness",
-    "self-history uses source.TestDate < target.TestDate"
+    "no-history missing count excludes history-column missingness"
   ]
 }

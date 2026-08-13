@@ -2,7 +2,7 @@
   "status": "PASS",
   "numeric_verification": "PASS",
   "probability_source": "VotingClassifier.predict_proba",
-  "manuscript_version": "v19",
+  "manuscript_version": "v20-final",
   "tables": [
     "table1_data_composition",
     "table2_feature_groups",

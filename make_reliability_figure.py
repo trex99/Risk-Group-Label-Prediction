@@ -31,8 +31,8 @@ def main() -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.5), dpi=300)
     panels = [
-        (axes[0], primary, "(a) Nested outer-CV OOF", ece_primary),
-        (axes[1], temporal, "(b) 2021–2022 temporal holdout", ece_temporal),
+        (axes[0], primary, "(a) Nested Outer-CV OOF", ece_primary),
+        (axes[1], temporal, "(b) 2021–2022 Temporal Holdout", ece_temporal),
     ]
     for ax, frame, title, ece in panels:
         upper = max(float(frame[["mean_pred", "observed_rate"]].to_numpy().max()) * 1.08, 0.04)
@@ -40,8 +40,8 @@ def main() -> None:
         ax.plot(frame["mean_pred"], frame["observed_rate"], marker="o", linewidth=1.6)
         ax.set_xlim(0, upper)
         ax.set_ylim(0, upper)
-        ax.set_xlabel("Mean predicted probability")
-        ax.set_ylabel("Observed label rate")
+        ax.set_xlabel("Mean Predicted Probability")
+        ax.set_ylabel("Observed Label Rate")
         ax.set_title(f"{title}\nAdaptive ECE={ece:.4f}")
         ax.grid(alpha=0.25)
     fig.tight_layout()

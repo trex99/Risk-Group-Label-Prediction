@@ -21,12 +21,14 @@ All final ensemble probabilities come from VotingClassifier.predict_proba().
 | Cross history | other_test_Test_id_count, other_test_Label_mean | Repeated-testing and cross-test information between A and B |
 | Accuracy and error statistics | acc_stats_*, err_stats_* | Level and variability of correct/incorrect performance |
 | Response-time statistics | rt_mean_stats_*, rt_std_stats_* | Response speed and response stability |
-| Missing-count feature | missing-count feature | Missingness or nonresponse pattern in test-derived features |
+| Missing-count feature | isna_sum | Number of missing final features after fold-specific history reconstruction |
 
-## Table 3. Single Models and VotingClassifier
+## Table 3. Performance of Baselines, Single Models and VotingClassifier
 
 | Model | Score | AUC | PR-AUC | Brier | ECE (uniform-10) | Adaptive ECE (quantile-10) |
 |---|---|---|---|---|---|---|
+| DummyClassifier | 0.257012 | 0.500000 | 0.028877 | 0.028043 | 0.000003 | 0.013625 |
+| LogisticRegression | 0.161806 | 0.690003 | 0.118645 | 0.026769 | 0.000459 | 0.002219 |
 | HistGradientBoosting | 0.147118 | 0.719082 | 0.156478 | 0.026162 | 0.000475 | 0.001053 |
 | LightGBM | 0.147059 | 0.719222 | 0.157305 | 0.026145 | 0.000538 | 0.001188 |
 | XGBoost | 0.147037 | 0.719264 | 0.157108 | 0.026148 | 0.000527 | 0.001072 |
@@ -40,7 +42,7 @@ All final ensemble probabilities come from VotingClassifier.predict_proba().
 | All features | 37 | 0.146790 | 0.000000 | 0.719737 | 0.158234 |
 | Remove accuracy/error statistics | 29 | 0.147496 | 0.000706 | 0.718325 | 0.158119 |
 | Remove age/timing | 33 | 0.168572 | 0.021782 | 0.676417 | 0.125051 |
-| Remove past/cross-test history | 21 | 0.161845 | 0.015055 | 0.690226 | 0.067764 |
+| Remove past/cross-test history features | 21 | 0.161845 | 0.015055 | 0.690226 | 0.067764 |
 | Remove missing-count feature | 36 | 0.146804 | 0.000014 | 0.719714 | 0.158266 |
 | Remove response-time statistics | 29 | 0.146750 | -0.000040 | 0.719815 | 0.158067 |
 
@@ -60,14 +62,13 @@ All final ensemble probabilities come from VotingClassifier.predict_proba().
 | ΔAUC (Model D − Model B) | 0.001935 | 0.001913 | 0.001194 ~ 0.002596 |
 | ΔPR-AUC (Model D − Model B) | 0.002823 | 0.002845 | 0.002082 ~ 0.003634 |
 
-## Table 7. Sensitivity Analysis by Individual Separation and History Inclusion
+## Table 7. Sensitivity Analysis of Prior Test History and PrimaryKey Separation
 
-| Condition | Score | AUC | PR-AUC |
-|---|---|---|---|
-| Individual-overlap CV, history excluded | 0.169473 | 0.674953 | 0.056860 |
-| Individual-overlap CV, prior history | 0.146790 | 0.719737 | 0.158234 |
-| PrimaryKey-disjoint CV, history excluded | 0.169843 | 0.674315 | 0.056717 |
-| PrimaryKey-disjoint CV, prior history | 0.142741 | 0.728127 | 0.175941 |
+| Condition | History Features | Features | Score | AUC | PR-AUC |
+|---|---|---|---|---|---|
+| Main nested CV | Included | 37 | 0.146790 | 0.719737 | 0.158234 |
+| Main outer folds | Excluded | 21 | 0.169473 | 0.674953 | 0.056860 |
+| PrimaryKey-disjoint CV | Excluded | 21 | 0.169843 | 0.674315 | 0.056717 |
 
 ## Table 8. Nested OOF Top-k
 

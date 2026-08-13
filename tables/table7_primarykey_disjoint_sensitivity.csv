@@ -1,5 +1,4 @@
-﻿Condition,Score,AUC,PR-AUC
-"Individual-overlap CV, history excluded",0.169473,0.674953,0.056860
-"Individual-overlap CV, prior history",0.146790,0.719737,0.158234
-"PrimaryKey-disjoint CV, history excluded",0.169843,0.674315,0.056717
-"PrimaryKey-disjoint CV, prior history",0.142741,0.728127,0.175941
+Condition,History Features,Features,Score,AUC,PR-AUC
+Main nested CV,Included,37,0.146790,0.719737,0.158234
+Main outer folds,Excluded,21,0.169473,0.674953,0.056860
+PrimaryKey-disjoint CV,Excluded,21,0.169843,0.674315,0.056717

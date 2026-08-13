@@ -1,4 +1,4 @@
-"""Run the additional analyses requested during first-round review.
+"""Run the final expanded baseline and year-by-test-type analyses.
 
 Outputs are confined to ``revision``. The simple-model comparison reuses the
 outer StratifiedKFold partitions and verified fold-isolated history caches
@@ -282,6 +282,9 @@ def main() -> None:
     summary.to_csv(summary_path, index=False, encoding="utf-8-sig")
 
     existing_table3 = pd.read_csv(CODE_DIR / "tables" / "table3_single_models_and_votingclassifier.csv")
+    existing_table3 = existing_table3.loc[
+        ~existing_table3["Model"].isin(["DummyClassifier", "LogisticRegression"])
+    ]
     baseline_rows = summary.loc[
         summary["model"].isin(["Prevalence-only DummyClassifier", "LogisticRegression"]),
         ["model", *metric_columns],
@@ -297,7 +300,7 @@ def main() -> None:
     revised_table3.to_csv(revised_table3_path, index=False, encoding="utf-8-sig")
 
     manifest = {
-        "analysis": "first-round reviewer additional analyses",
+        "analysis": "final expanded baseline and year-by-test-type analyses",
         "random_state": RANDOM_STATE,
         "outer_split": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
         "history_rule": "source.TestDate < target.TestDate; verified cached histories",

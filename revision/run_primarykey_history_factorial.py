@@ -1,16 +1,16 @@
-"""PrimaryKey separation x history-availability sensitivity experiment.
+"""PrimaryKey separation and history-availability sensitivity analysis.
 
-This revision-only analysis separates two questions that were combined in the
-original PrimaryKey-disjoint result:
+This expanded analysis separates two questions:
 
 1. How much does performance change when the 16 history features are removed?
 2. How much does performance change when people are completely disjoint after
    both sides are evaluated without history?
 
-It additionally evaluates a sequential, history-available PrimaryKey-disjoint
-condition.  In that condition, validation features may use strictly earlier
-records from the same validation person, but never the current, same-month, or
-future record.  The fitted model still uses no validation row for training.
+An optional supplementary condition evaluates sequential history availability
+under PrimaryKey separation. In that condition, validation features may use
+strictly earlier records from the same validation person, but never the
+current, same-month, or future record. The fitted model still uses no
+validation row for training.
 
 All new code, predictions, manifests, and tables are written below
 ``code/revision``. Existing manuscript artifacts are read but never modified.
@@ -48,17 +48,16 @@ TMP_DIR = REVISION_ROOT / "tmp" / "primarykey_history_factorial"
 TABLE_DIR = REVISION_ROOT / "tables"
 
 MODEL_NAMES = ("hgb", "lgb", "xgb", "cb")
-NEW_CONDITIONS = (
+FINAL_CONDITIONS = (
     "stratified_no_history",
     "group_no_history",
+)
+SUPPLEMENTARY_CONDITIONS = (
     "group_prior_self_history",
 )
+NEW_CONDITIONS = FINAL_CONDITIONS + SUPPLEMENTARY_CONDITIONS
 
-TABLE7_NEW_CONDITIONS = (
-    "stratified_no_history",
-    "group_no_history",
-    "group_prior_self_history",
-)
+TABLE7_NEW_CONDITIONS = FINAL_CONDITIONS
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -332,8 +331,15 @@ def summarize() -> None:
         "stratified_training_history": read_existing_fold_metrics("stratified"),
         "stratified_no_history": read_new_metrics("stratified_no_history"),
         "group_no_history": read_new_metrics("group_no_history"),
-        "group_prior_self_history": read_new_metrics("group_prior_self_history"),
     }
+    supplementary_paths = [
+        TMP_DIR / f"group_prior_self_history_outer{fold}_metrics.csv"
+        for fold in range(1, 6)
+    ]
+    if all(path.exists() for path in supplementary_paths):
+        frames["group_prior_self_history"] = read_new_metrics(
+            "group_prior_self_history"
+        )
     labels = {
         "stratified_training_history": (
             "Individual overlap allowed",
@@ -393,12 +399,15 @@ def summarize() -> None:
             "group_no_history",
             "stratified_no_history",
         ),
-        (
-            "Prior-history contribution among PrimaryKey-disjoint persons",
-            "group_prior_self_history",
-            "group_no_history",
-        ),
     ]
+    if "group_prior_self_history" in frames:
+        contrasts.append(
+            (
+                "Prior-history contribution among PrimaryKey-disjoint persons",
+                "group_prior_self_history",
+                "group_no_history",
+            )
+        )
     contrast_rows = []
     for label, left, right in contrasts:
         left_frame = frames[left].sort_values("outer_fold").reset_index(drop=True)
@@ -418,10 +427,9 @@ def summarize() -> None:
     )
 
     proposed_conditions = [
-        "stratified_no_history",
         "stratified_training_history",
+        "stratified_no_history",
         "group_no_history",
-        "group_prior_self_history",
     ]
     proposed = summary.set_index("Condition").loc[proposed_conditions].reset_index()
     proposed.to_csv(
@@ -431,13 +439,19 @@ def summarize() -> None:
         float_format="%.9f",
     )
     paper_labels = {
-        "stratified_no_history": "Individual-overlap CV, history excluded",
-        "stratified_training_history": "Individual-overlap CV, prior history",
-        "group_no_history": "PrimaryKey-disjoint CV, history excluded",
-        "group_prior_self_history": "PrimaryKey-disjoint CV, prior history",
+        "stratified_training_history": ("Main nested CV", "Included"),
+        "stratified_no_history": ("Main outer folds", "Excluded"),
+        "group_no_history": ("PrimaryKey-disjoint CV", "Excluded"),
     }
-    paper_table = proposed[["Condition", "Score", "AUC", "PR-AUC"]].copy()
-    paper_table["Condition"] = paper_table["Condition"].map(paper_labels)
+    paper_table = proposed[["Condition", "Features", "Score", "AUC", "PR-AUC"]].copy()
+    paper_table.insert(
+        1,
+        "History Features",
+        paper_table["Condition"].map(lambda value: paper_labels[value][1]),
+    )
+    paper_table["Condition"] = paper_table["Condition"].map(
+        lambda value: paper_labels[value][0]
+    )
     public_table_dir = CODE_ROOT / "tables"
     public_table_dir.mkdir(parents=True, exist_ok=True)
     paper_table.to_csv(
@@ -457,7 +471,6 @@ def summarize() -> None:
             "AUC and PR-AUC recomputed directly from saved predictions",
             "PrimaryKey overlap rejected for group folds",
             "no-history missing count excludes history-column missingness",
-            "self-history uses source.TestDate < target.TestDate",
         ],
     }
     (TMP_DIR / "primarykey_history_factorial_verification.json").write_text(

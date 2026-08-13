@@ -33,6 +33,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shap
+from PIL import Image
 
 from fold_isolated_pipeline import (
     HISTORY_COLS,
@@ -331,6 +332,9 @@ def make_figures(
     plt.figure(figsize=(8.5, 7.5), dpi=300)
     shap.summary_plot(pooled_values, pooled_x, max_display=20, show=False, plot_size=None)
     plt.title("(a) Pooled Five-Fold OOF SHAP Summary")
+    plt.gca().set_xlabel("SHAP Value (Impact on Model Output)")
+    if len(plt.gcf().axes) > 1:
+        plt.gcf().axes[-1].set_ylabel("Feature Value")
     plt.tight_layout()
     pooled_path = FIGURE_DIR / "Figure_revision_SHAP_5fold_OOF_summary_300dpi.png"
     plt.savefig(pooled_path, dpi=300, bbox_inches="tight")
@@ -347,7 +351,7 @@ def make_figures(
     labels = [f"Fold {fold}" for fold in range(1, N_FOLDS + 1)]
     ax_heat.set_xticks(range(N_FOLDS), labels=labels, rotation=45, ha="right")
     ax_heat.set_yticks(range(N_FOLDS), labels=labels)
-    ax_heat.set_title("(a) Pairwise Spearman rank correlation")
+    ax_heat.set_title("(a) Pairwise Spearman Rank Correlation")
     for row in range(N_FOLDS):
         for col in range(N_FOLDS):
             value = float(spearman.iloc[row, col])
@@ -368,11 +372,11 @@ def make_figures(
                 label=f"Fold {fold}" if y_pos == 0 else None,
                 zorder=2,
             )
-        ax_rank.scatter(row["mean_rank"], y_pos, marker="D", s=46, color="black", label="Mean rank" if y_pos == 0 else None, zorder=3)
+        ax_rank.scatter(row["mean_rank"], y_pos, marker="D", s=46, color="black", label="Mean Rank" if y_pos == 0 else None, zorder=3)
     ax_rank.set_yticks(y_positions, labels=shown["feature"])
     ax_rank.invert_yaxis()
-    ax_rank.set_xlabel("SHAP importance rank (1 = highest)")
-    ax_rank.set_title("(b) Fold-specific ranks of consensus top features")
+    ax_rank.set_xlabel("SHAP Importance Rank (1 = Highest)")
+    ax_rank.set_title("(b) Fold-Specific Ranks of Consensus Top Features")
     ax_rank.grid(axis="x", alpha=0.25)
     ax_rank.legend(loc="lower right", fontsize=8, ncol=2)
     fig.tight_layout()
@@ -395,7 +399,7 @@ def make_figures(
         color="#4C78A8",
         alpha=0.82,
         error_kw={"ecolor": "#333333", "elinewidth": 1.0, "capsize": 2.5},
-        label="Five-fold average ± SD",
+        label="Five-Fold Average ± SD",
     )
     for fold in range(1, N_FOLDS + 1):
         ax.scatter(
@@ -404,18 +408,38 @@ def make_figures(
             s=19,
             color="#F58518",
             alpha=0.75,
-            label="Fold-specific value" if fold == 1 else None,
+            label="Fold-Specific Value" if fold == 1 else None,
             zorder=3,
         )
     ax.set_yticks(y_positions, labels=average_shown["feature"])
-    ax.set_xlabel("Mean absolute SHAP value")
-    ax.set_title("(b) Average of Fold-Wise Mean Absolute SHAP Values")
+    ax.set_xlabel("Mean Absolute SHAP Value")
+    ax.set_title("(b) Fold-Averaged Feature Importance (Mean Absolute SHAP)")
     ax.grid(axis="x", alpha=0.22)
     ax.legend(loc="lower right", fontsize=8)
     fig.tight_layout()
     average_path = FIGURE_DIR / "Figure_revision_SHAP_fold_average_importance_300dpi.png"
     fig.savefig(average_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
+
+    combined_path = FIGURE_DIR / "Figure_revision_SHAP_5fold_combined_300dpi.png"
+    with Image.open(pooled_path) as pooled_image, Image.open(average_path) as average_image:
+        pooled_rgb = pooled_image.convert("RGB")
+        average_rgb = average_image.convert("RGB")
+        gap = 40
+        width = max(pooled_rgb.width, average_rgb.width)
+        combined = Image.new(
+            "RGB",
+            (width, pooled_rgb.height + gap + average_rgb.height),
+            "white",
+        )
+        combined.paste(pooled_rgb, ((width - pooled_rgb.width) // 2, 0))
+        combined.paste(
+            average_rgb,
+            ((width - average_rgb.width) // 2, pooled_rgb.height + gap),
+        )
+        combined.save(combined_path, dpi=(300, 300))
+    final_figure_path = CODE_ROOT / "figures" / "Figure_3_SHAP_VotingClassifier_300dpi.png"
+    final_figure_path.write_bytes(combined_path.read_bytes())
 
 
 def main() -> None:
@@ -518,7 +542,11 @@ def main() -> None:
             "mean_jaccard": float(subset["jaccard"].mean()),
         }
 
-    artifacts = [*table_paths.values(), *FIGURE_DIR.glob("Figure_revision_SHAP_*300dpi.png")]
+    artifacts = [
+        *table_paths.values(),
+        *FIGURE_DIR.glob("Figure_revision_SHAP_*300dpi.png"),
+        CODE_ROOT / "figures" / "Figure_3_SHAP_VotingClassifier_300dpi.png",
+    ]
     if fold1_reproduction_path.exists():
         artifacts.append(fold1_reproduction_path)
     manifest = {

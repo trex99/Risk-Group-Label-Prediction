@@ -4,4 +4,4 @@ Past history,"prev_ab_all_label_mean, prev_all_label_mean",Same worker's past te
 Cross history,"other_test_Test_id_count, other_test_Label_mean",Repeated-testing and cross-test information between A and B
 Accuracy and error statistics,"acc_stats_*, err_stats_*",Level and variability of correct/incorrect performance
 Response-time statistics,"rt_mean_stats_*, rt_std_stats_*",Response speed and response stability
-Missing-count feature,missing-count feature,Missingness or nonresponse pattern in test-derived features
+Missing-count feature,isna_sum,Number of missing final features after fold-specific history reconstruction

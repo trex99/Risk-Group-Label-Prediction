@@ -1,7 +1,8 @@
 param(
     [int]$MaxParallel = 2,
     [int]$ThreadsPerEstimator = 2,
-    [int]$VotingJobs = 2
+    [int]$VotingJobs = 2,
+    [switch]$IncludeSupplementaryHistory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -10,12 +11,16 @@ $workspace = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $logDir = Join-Path $PSScriptRoot 'tmp\primarykey_history_factorial\logs'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
-$tasks = @()
-foreach ($condition in @(
+$conditions = @(
     'group_no_history',
-    'stratified_no_history',
-    'group_prior_self_history'
-)) {
+    'stratified_no_history'
+)
+if ($IncludeSupplementaryHistory) {
+    $conditions += 'group_prior_self_history'
+}
+
+$tasks = @()
+foreach ($condition in $conditions) {
     foreach ($fold in 1..5) {
         $tasks += [pscustomobject]@{ Condition = $condition; Fold = $fold }
     }

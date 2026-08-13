@@ -6,7 +6,7 @@
 
 1. 자원 검증: 공개된 코드의 구문, 필수파일과 최종 표·그림의 SHA-256을 확인한다.
 2. 전체 재현: 원자료에서 시작하여 Optuna 튜닝, 외부평가, 민감도 분석, Bootstrap, SHAP, 표·그림 생성을 다시 수행한다.
-3. 심사 후 분석 재현: 기본 재현 산출물을 이용하여 기준모델 튜닝과 5-fold SHAP 분석을 수행한다.
+3. 최종 확장 분석 재현: 기본 재현 산출물을 이용하여 기준모델 튜닝, 이력정보 민감도와 5-fold SHAP 분석을 수행한다.
 
 ## 빠른 자원 검증
 
@@ -33,7 +33,7 @@ python run_full_reproduction.py --data-path "D:\data\open_v2\data"
 
 ```text
 data → protocol → tuning → outer → sensitivity
-→ post → verification → shap → artifacts
+→ post → verification → expanded → shap → artifacts
 ```
 
 주요 설정은 다음과 같다.
@@ -41,29 +41,29 @@ data → protocol → tuning → outer → sensitivity
 - 난수 시드: 42
 - 무작위 계층 외부 5-fold
 - PrimaryKey 완전분리 외부 5-fold
-- 시간분할: 2016\~2020년 학습, 2021~2022년 검증
+- 시간분할: 2016–2020년 학습, 2021–2022년 검증
 - 내부 튜닝: 외부 학습 파티션 내부 3-fold
 - 모델: HGB, LightGBM, XGBoost, CatBoost
 - Optuna: 11개 외부 fold × 4개 모델 × 100 trial
 - 앙상블: `VotingClassifier(voting="soft")`
 - 최종 확률: `VotingClassifier.predict_proba()` 직접 출력
 - 군집 Bootstrap: PrimaryKey 단위 500회
-- SHAP: 외부 1번 fold, 검증 2,000건, 배경 100건
+- SHAP: 외부 5개 fold, fold별 검증 2,000건, 배경 100건
 
-## 1차 심사 후 추가 분석
+## 최종 확장 분석
 
-기본 재현이 완료된 뒤 저장소 루트에서 다음 명령을 순서대로 실행한다.
+전체 실행기는 아래 작업을 `expanded`와 `shap` 단계에서 자동 호출한다. 개별 분석만 수행하려면 저장소 루트에서 다음 명령을 순서대로 실행한다.
 
 ```powershell
 python revision/run_revision_analyses.py
 python revision/tune_logistic_c.py
 PowerShell -ExecutionPolicy Bypass -File revision/run_primarykey_history_factorial_queue.ps1
 python revision/run_primarykey_history_factorial.py --condition summarize
-python build_manuscript_artifacts.py
 python revision/run_shap_fold_stability.py
+python build_manuscript_artifacts.py
 ```
 
-[표 7] 민감도 분석은 개인 중복 허용 및 PrimaryKey 완전분리 조건에서 과거이력 포함 여부를 비교한다. 추가 SHAP 분석은 5개 외부 fold 각각에서 검증자료 2,000건과 학습 배경자료 100건을 사용한다. fold별 평균 절대 SHAP을 단순평균하고, 전체 피처 순위의 Spearman 상관계수와 상위 피처 집합의 일치율을 계산한다. 자세한 설정과 결과 파일은 [`revision/README.md`](revision/README.md)에 제시한다.
+[표 7]은 동일한 이력정보 제외 조건에서 개인 중복 허용과 PrimaryKey 완전분리를 비교하고, 주 중첩 교차검증의 이력 포함 결과를 함께 제시한다. 5-fold SHAP은 각 외부 fold의 검증자료 2,000건과 학습 배경자료 100건을 사용한다. fold별 평균 절대 SHAP을 단순평균하고, 전체 피처 순위의 Spearman 상관계수와 상위 피처 집합의 일치율을 계산한다. 자세한 설정과 결과 파일은 [`revision/README.md`](revision/README.md)에 제시한다.
 
 ## 누수 차단 규칙
 
@@ -78,11 +78,12 @@ python revision/run_shap_fold_stability.py
 
 기준 장비는 Intel Core Ultra 7 265K 20코어와 32GB 메모리였다.
 
-- 전체 경과시간: 약 60~70시간
+- 기본 파이프라인 경과시간: 약 60–70시간
+- 최종 확장 분석과 5-fold SHAP 실행시간 별도
 - 누적 CPU 사용량 근사치: 약 430~500 코어시간
 - 원자료 제외 중간 산출물: 약 6.7GiB
 - 원자료 포함 총 사용량: 약 8.5GiB
-- 권장 여유공간: 12~15GiB 이상
+- 권장 여유공간: 12–15GiB 이상
 
 CPU, 메모리, 저장장치 및 패키지 빌드에 따라 실행시간은 달라질 수 있다.
 
@@ -94,4 +95,4 @@ CPU, 메모리, 저장장치 및 패키지 빌드에 따라 실행시간은 달�
 python verify_release.py
 ```
 
-표 10 상대시점 조건의 Top 5% 라벨률 원 산출값은 `0.1106498565`이다. 고정된 v19 논문 표의 표시값을 재현하기 위해 논문용 표에는 `11.07%`를 유지하고 원 정밀값은 재현 결과에 보존한다.
+표 10 상대시점 조건의 Top 5% 라벨률 원 산출값은 `0.1106498565`이다. 최종 v20 논문 표의 표시값을 재현하기 위해 논문용 표에는 `11.07%`를 유지하고 원 정밀값은 재현 결과에 보존한다.

@@ -419,6 +419,9 @@ def main() -> None:
     existing_models = pd.read_csv(
         CODE_DIR / "tables" / "table3_single_models_and_votingclassifier.csv"
     )
+    existing_models = existing_models.loc[
+        ~existing_models["Model"].isin(["DummyClassifier", "LogisticRegression"])
+    ]
     final_table = pd.concat([final_table, existing_models], ignore_index=True)
     final_table_path = TABLES / "table_revision_model_comparison.csv"
     final_table.to_csv(final_table_path, index=False, encoding="utf-8-sig")

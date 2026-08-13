@@ -6,7 +6,7 @@
 
 본 디렉터리는 운전적성정밀검사 데이터셋을 이용한 위험군 라벨 예측 연구의 최종 결과를 재현하기 위한 코드로 구성하였다. 분석자료 생성부터 누수 차단 검증, 중첩 교차검증, Optuna 튜닝, 최종 VotingClassifier 평가, 민감도 분석, Bootstrap, Top-k, 보정도, SHAP, 논문용 표·그림 생성까지의 전체 절차를 포함한다.
 
-25개 Python 파일을 사용자가 하나씩 직접 실행하는 구조가 아니다. 전체 재현의 진입점은 `run_full_reproduction.py`이며, 이 파일이 필요한 분석 파일을 정해진 순서대로 호출한다.
+분석 파일을 사용자가 하나씩 직접 실행하는 구조가 아니다. 전체 재현의 진입점은 `run_full_reproduction.py`이며, 이 파일이 필요한 분석 파일을 정해진 순서대로 호출한다.
 
 ```text
 원자료 open_v2
@@ -17,7 +17,8 @@
 → 피처군·시간·개인분리 민감도 분석
 → Bootstrap·Top-k·검사유형·보정도 분석
 → 2회 독립 수치 검증
-→ permutation SHAP
+→ 기준모델·이력정보 민감도 분석
+→ 5-fold permutation SHAP
 → 논문 표 1~11 및 그림 1·3·4 생성
 ```
 
@@ -84,7 +85,7 @@ python run_full_reproduction.py --dry-run
 python run_full_reproduction.py --data-path "D:\data\open_v2\data"
 ```
 
-기본 실행은 각 모델·외부 fold마다 Optuna 100회를 수행한다. Intel Core Ultra 7 265K 20코어, 32GB급 메모리를 사용한 기준 실행에서 전체 경과시간은 약 60\~70시간이었다. 원자료를 제외한 중간 산출물은 약 6.7GiB였으며, 원자료를 포함하면 약 8.5GiB가 필요했다. 임시파일과 동기화 여유를 고려하여 12~15GiB 이상의 여유공간을 권장한다.
+기본 실행은 각 모델·외부 fold마다 Optuna 100회를 수행한다. Intel Core Ultra 7 265K 20코어, 32GB급 메모리를 사용한 기본 파이프라인의 경과시간은 약 60–70시간이었다. 최종 확장 분석과 5-fold SHAP의 실행시간이 추가된다. 원자료를 제외한 기본 중간 산출물은 약 6.7GiB였으며, 원자료를 포함하면 약 8.5GiB가 필요했다. 임시파일과 동기화 여유를 고려하여 12–15GiB 이상의 여유공간을 권장한다.
 
 ### 4.3 일부 단계만 실행
 
@@ -96,7 +97,7 @@ python run_full_reproduction.py --start-at tuning --stop-after outer
 
 ```text
 data → protocol → tuning → outer → sensitivity
-→ post → verification → shap → artifacts
+→ post → verification → expanded → shap → artifacts
 ```
 
 `--start-at`으로 중간 단계부터 시작하려면 앞 단계의 산출물이 재현 작업경로에 이미 존재해야 한다.
@@ -172,7 +173,7 @@ runtime/strict_month_reanalysis/data
 
 - 무작위 계층 5-fold
 - PrimaryKey 완전분리 5-fold
-- 2016~2020년 학습, 2021~2022년 검증의 시간분할 1개
+- 2016–2020년 학습, 2021–2022년 검증의 시간분할 1개
 
 각 외부 학습 파티션 내부에서 3-fold 검증을 수행하며, HistGradientBoosting, LightGBM, XGBoost, CatBoost를 독립적으로 튜닝한다.
 
@@ -284,22 +285,37 @@ VotingClassifier.predict_proba()
 
 수동 확률 평균은 VotingClassifier 출력과의 동일성 감사에만 사용하며 논문 결과의 확률원으로 사용하지 않는다. 검산 결과가 `PASS`가 아니면 최종 논문 표 생성이 중단된다.
 
-### 5.8 SHAP: `shap`
+### 5.8 최종 확장 분석: `expanded`
+
+관련 디렉터리:
+
+- [`revision/`](revision/)
+
+최종 논문에 포함된 다음 분석을 수행한다.
+
+- `DummyClassifier`와 내부 교차검증으로 규제강도 `C`를 선택한 로지스틱 회귀 기준모델
+- 개인 중복 허용·PrimaryKey 완전분리 조건의 이력정보 제외 민감도 분석
+- 최종 [표 3]과 [표 7] 생성에 필요한 검증자료
+
+상세 실행조건과 보조 결과는 [`revision/README.md`](revision/README.md)에 정리하였다.
+
+### 5.9 5-fold SHAP: `shap`
 
 관련 파일:
 
-- `run_votingclassifier_shap.py`
+- `revision/run_shap_fold_stability.py`
 
-무작위 계층 외부 1번 fold에서 최종 VotingClassifier에 permutation SHAP을 적용한다.
+5개 무작위 계층 외부 fold의 최종 VotingClassifier에 permutation SHAP을 적용한다.
 
-- 설명자료: 외부 검증 파티션의 2,000건 표본
-- 배경자료: 외부 학습 파티션의 100건 표본
-- 난수 시드: 42
+- 설명자료: 각 외부 검증 파티션의 2,000건 표본, 총 10,000건
+- 배경자료: 각 외부 학습 파티션의 100건 표본
+- 표본추출 난수 시드: fold별 42–46
 - 예측함수: `VotingClassifier.predict_proba()`
+- 피처 중요도: fold별 평균 절대 SHAP의 단순평균
 
-이 단계에서 최초 제출본의 그림 3과 SHAP 중요도 자료를 생성한다. 1차 심사 후 수행한 5-fold SHAP 확장분석은 `revision` 디렉터리에서 별도로 재현한다.
+이 단계에서 최종 논문의 그림 3과 fold 간 중요도 순위 안정성 자료를 생성한다.
 
-### 5.9 논문 자원 생성: `artifacts`
+### 5.10 논문 자원 생성: `artifacts`
 
 관련 파일:
 
@@ -314,23 +330,23 @@ VotingClassifier.predict_proba()
 
 최종 표는 `tables`, 최종 그림은 `figures`에 저장한다.
 
-### 5.10 1차 심사 후 추가 분석
+### 5.11 보조 분석 자원
 
 관련 디렉터리:
 
 - [`revision/`](revision/)
 
-심사 의견에 따라 다음 분석을 추가하였다.
+최종 결과의 근거가 되는 상세·보조 분석을 함께 제공한다.
 
 - `DummyClassifier`와 로지스틱 회귀 기준모델의 외부 5-fold 평가
 - 3-fold 내부 교차검증을 이용한 로지스틱 회귀 규제강도 `C` 튜닝
-- 미관측 개인 여부와 과거 이력 포함 여부에 따른 [표 7] 민감도 분석
+- 미관측 개인 여부와 과거 이력 가용성에 따른 민감도 분석
 - 5개 외부 fold의 OOF SHAP 집계와 중요도 순위 안정성 평가
 - fold별 평균 절대 SHAP의 단순평균 및 표준편차 시각화
 
 코드, 실행 순서, 최종 결과표와 그림은 [`revision/README.md`](revision/README.md)에 정리하였다. 대용량 예측값·이력 캐시·개별 SHAP 배열은 공개본에 포함하지 않는다.
 
-## 6. 기본 재현 25개 Python 파일의 역할
+## 6. 주요 재현 파일의 역할
 
 | 구분 | 파일 | 역할 |
 |---|---|---|
@@ -357,7 +373,8 @@ VotingClassifier.predict_proba()
 | 하위집단 | `summarize_test_type_subgroups.py` | 신규검사·자격유지검사별 지표 |
 | 보정도 | `make_reliability_figure.py` | 그림 4 생성 |
 | 수치검증 | `verify_final_outputs.py` | 결과 전체의 2회 독립 검산 |
-| SHAP | `run_votingclassifier_shap.py` | 그림 3과 SHAP 중요도 생성 |
+| SHAP | `revision/run_shap_fold_stability.py` | 최종 그림 3과 5-fold 중요도 안정성 생성 |
+| 보조 SHAP | `run_votingclassifier_shap.py` | 외부 1번 fold 단독 진단 |
 | 논문 표 | `build_manuscript_artifacts.py` | 표 1~11과 manifest 생성 |
 
 `build_fold_history_caches.py`는 전체 실행기가 직접 호출하지 않는 선택적 보조 코드이다. 무작위·개인분리 외부 fold의 이력행렬을 미리 만들거나 변경 행을 별도로 감사할 때만 실행한다. 일반적인 전체 재현에서는 필요한 이력 캐시를 각 단계가 생성하거나 재사용한다.
@@ -369,7 +386,7 @@ VotingClassifier.predict_proba()
 ```text
 figures/   # 그림 1~4 및 그림 2 편집용 SVG
 tables/    # 표 1~11, ledger, manifest, 검증 기록
-revision/  # 1차 심사 후 추가 분석 코드, 표, 그림
+revision/  # 최종 확장·보조 분석 코드, 표, 그림
 ```
 
 그림 2는 분석결과 그래프가 아니라 연구절차를 정리한 편집 도식이다. 따라서 분석 코드로 자동 생성하지 않고 기존 PNG와 편집용 SVG를 최종 자원으로 유지한다.
@@ -400,7 +417,7 @@ runtime/
 3. 이력 피처는 캐시된 값을 무조건 신뢰하지 않고 분할 인덱스와 원천자료 해시를 확인한다.
 4. 최종 앙상블 결과에는 `VotingClassifier.predict_proba()`만 사용한다.
 5. 그림 2는 정적 편집 자원이므로 자동 실행 대상이 아니다.
-6. 표 10 상대시점 조건의 Top 5% 라벨률 원 산출값은 `0.1106498565`이다. 고정된 v19 PDF의 표시값을 재현하기 위해 논문용 표에는 `11.07%`를 유지하며 원 정밀값은 재현 결과 CSV에 보존한다.
+6. 표 10 상대시점 조건의 Top 5% 라벨률 원 산출값은 `0.1106498565`이다. 최종 v20 원고의 표시값을 재현하기 위해 논문용 표에는 `11.07%`를 유지하며 원 정밀값은 재현 결과 CSV에 보존한다.
 7. 재현 코드는 논문용 표와 그림을 생성한다.
 
 ## 9. 공개 저장소의 범위
@@ -431,6 +448,6 @@ python verify_release.py
 
 ## 10. 인용과 라이선스
 
-이 저장소를 연구에 활용하는 경우 `CITATION.cff`의 저자 및 논문 정보를 인용한다. 대상 논문은 현재 「교통안전연구」 심사 중이며, 확정된 권·호·쪽수와 DOI는 게재 승인 후 갱신한다.
+이 저장소를 연구에 활용하는 경우 `CITATION.cff`의 저자 및 논문 정보를 인용한다. 대상 논문은 「교통안전연구」 게재가 확정되었으며, 권·호·쪽수와 DOI는 편집부 확정 후 갱신한다.
 
 코드는 `LICENSE`에 명시된 MIT License로 배포한다. 데이터와 논문 PDF는 코드 라이선스의 적용대상이 아니며, 원자료는 원 배포처의 이용조건을 따른다.

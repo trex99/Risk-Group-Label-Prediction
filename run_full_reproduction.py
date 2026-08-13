@@ -27,12 +27,12 @@ def main() -> None:
     parser.add_argument("--bootstrap-jobs", type=int, default=10)
     parser.add_argument(
         "--start-at",
-        choices=["data", "protocol", "tuning", "outer", "sensitivity", "post", "verification", "shap", "artifacts"],
+        choices=["data", "protocol", "tuning", "outer", "sensitivity", "post", "verification", "expanded", "shap", "artifacts"],
         default="data",
     )
     parser.add_argument(
         "--stop-after",
-        choices=["data", "protocol", "tuning", "outer", "sensitivity", "post", "verification", "shap", "artifacts"],
+        choices=["data", "protocol", "tuning", "outer", "sensitivity", "post", "verification", "expanded", "shap", "artifacts"],
         default="artifacts",
     )
     parser.add_argument("--force-data", action="store_true")
@@ -81,7 +81,41 @@ def main() -> None:
             ],
         ),
         ("verification", [command("verify_final_outputs.py")]),
-        ("shap", [command("run_votingclassifier_shap.py")]),
+        (
+            "expanded",
+            [
+                command("revision/run_revision_analyses.py"),
+                command("revision/tune_logistic_c.py"),
+            ]
+            + [
+                command(
+                    "revision/run_primarykey_history_factorial.py",
+                    "--condition",
+                    "stratified_no_history",
+                    "--outer-fold",
+                    str(fold),
+                )
+                for fold in range(1, 6)
+            ]
+            + [
+                command(
+                    "revision/run_primarykey_history_factorial.py",
+                    "--condition",
+                    "group_no_history",
+                    "--outer-fold",
+                    str(fold),
+                )
+                for fold in range(1, 6)
+            ]
+            + [
+                command(
+                    "revision/run_primarykey_history_factorial.py",
+                    "--condition",
+                    "summarize",
+                )
+            ],
+        ),
+        ("shap", [command("revision/run_shap_fold_stability.py")]),
         ("artifacts", [command("build_manuscript_artifacts.py")]),
     ]
 

@@ -9,6 +9,8 @@ from pathlib import Path
 import re
 import subprocess
 
+import pandas as pd
+
 
 ROOT = Path(__file__).resolve().parent
 REQUIRED = [
@@ -35,6 +37,19 @@ FORBIDDEN_SUFFIXES = {
     ".pkl", ".npy", ".npz", ".sqlite", ".sqlite3", ".db", ".log", ".pid"
 }
 FORBIDDEN_NAMES = {"desktop.ini", ".DS_Store", ".env"}
+EXPECTED_TABLE_ROWS = {
+    "tables/table1_data_composition.csv": 4,
+    "tables/table2_feature_groups.csv": 6,
+    "tables/table3_single_models_and_votingclassifier.csv": 7,
+    "tables/table4_feature_group_ablation.csv": 6,
+    "tables/table5_stepwise_feature_sets.csv": 4,
+    "tables/table6_incremental_value_cluster_bootstrap.csv": 2,
+    "tables/table7_primarykey_disjoint_sensitivity.csv": 3,
+    "tables/table8_nested_oof_topk.csv": 3,
+    "tables/table9_time_specification_robustness.csv": 3,
+    "tables/table10_temporal_holdout_topk.csv": 9,
+    "tables/table11_test_type_subgroup_performance.csv": 6,
+}
 
 
 def sha256(path: Path) -> str:
@@ -96,6 +111,34 @@ def main() -> None:
             failures.append(f"forbidden generated artifact: {relative.as_posix()}")
         if path.stat().st_size > 50 * 1024 * 1024:
             failures.append(f"file exceeds 50 MiB release policy: {relative.as_posix()}")
+
+    for relative, expected_rows in EXPECTED_TABLE_ROWS.items():
+        path = ROOT / relative
+        if not path.exists():
+            failures.append(f"missing final manuscript table: {relative}")
+            continue
+        try:
+            rows = len(pd.read_csv(path))
+        except Exception as exc:
+            failures.append(f"unreadable final manuscript table: {relative}: {exc}")
+            continue
+        if rows != expected_rows:
+            failures.append(
+                f"final manuscript table row count: {relative}: "
+                f"expected {expected_rows}, found {rows}"
+            )
+
+    manifest_path = ROOT / "tables" / "manuscript_artifacts_manifest.json"
+    if manifest_path.exists():
+        try:
+            manuscript_manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError) as exc:
+            failures.append(f"invalid manuscript artifact manifest: {exc}")
+        else:
+            if manuscript_manifest.get("status") != "PASS":
+                failures.append("manuscript artifact manifest is not PASS")
+            if manuscript_manifest.get("manuscript_version") != "v20-final":
+                failures.append("manuscript artifact manifest is not v20-final")
 
     checksum_path = ROOT / "checksums.sha256"
     checksums_checked = 0

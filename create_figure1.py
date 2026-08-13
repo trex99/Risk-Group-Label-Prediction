@@ -56,12 +56,12 @@ def main() -> None:
 
     # (a) Class imbalance
     bars = ax1.bar(
-        ["Non-risk (0)", "Risk (1)"],
+        ["Non-Risk (0)", "Risk (1)"],
         overall_rates.values,
         color=["#aeb7c8", "#c44e52"],
         width=0.6,
     )
-    ax1.set_title("(a) Class imbalance", pad=12)
+    ax1.set_title("(a) Class Imbalance", pad=12)
     ax1.set_ylabel("Share (%)")
     ax1.set_ylim(0, 108)
     for bar, value in zip(bars, overall_rates.values):
@@ -90,8 +90,8 @@ def main() -> None:
         color=["#4c72b0", "#c44e52"],
         width=0.6,
     )
-    ax2.set_title("(b) Risk rate by test type", pad=12)
-    ax2.set_ylabel("Risk-group rate (%)")
+    ax2.set_title("(b) Risk Rate by Test Type", pad=12)
+    ax2.set_ylabel("Risk-Group Rate (%)")
     ax2.set_ylim(0, 5.4)
     for bar, test, value in zip(bars, by_test.index, by_test["rate"].values):
         ax2.text(
@@ -113,9 +113,9 @@ def main() -> None:
         marker="o",
         markersize=9,
     )
-    ax3.set_title("(c) Risk rate by test year", pad=12)
-    ax3.set_xlabel("Test year")
-    ax3.set_ylabel("Risk-group rate (%)")
+    ax3.set_title("(c) Risk Rate by Test Year", pad=12)
+    ax3.set_xlabel("Test Year")
+    ax3.set_ylabel("Risk-Group Rate (%)")
     ax3.set_xticks(by_year.index)
     ax3.set_ylim(2.2, 7.0)
 
@@ -126,10 +126,10 @@ def main() -> None:
         color="#55a868",
         width=0.6,
     )
-    ax4.set_title("(d) Repeated testing per individual", pad=12)
-    ax4.set_xlabel("Tests per individual")
-    ax4.set_ylabel("Number of individuals")
-    ax4.set_ylim(0, 700_000)
+    ax4.set_title("(d) Repeated Testing per Individual", pad=12)
+    ax4.set_xlabel("Tests per Individual")
+    ax4.set_ylabel("Number of Individuals")
+    ax4.set_ylim(0, 725_000)
     for bar, value in zip(bars, repeat_pct.values):
         ax4.text(
             bar.get_x() + bar.get_width() / 2,

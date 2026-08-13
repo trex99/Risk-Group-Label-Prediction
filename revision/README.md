@@ -1,6 +1,6 @@
-# 1차 심사 후 추가 분석
+# 최종 확장·보조 분석
 
-이 디렉터리는 1차 심사 의견에 따라 수행한 추가 분석의 코드와 최종 산출물을 제공한다. 원자료, 검사건별 예측확률, fold별 이력 캐시 및 개별 SHAP 배열은 개인정보·용량 문제로 포함하지 않는다. 각 분석은 기본 재현 파이프라인과 동일한 5개 외부 fold를 사용하며, 이력 원천은 분석조건별로 명시한다.
+이 디렉터리는 최종 논문에 포함된 확장 분석과 보조 민감도 분석의 코드·산출물을 제공한다. 원자료, 검사건별 예측확률, fold별 이력 캐시 및 개별 SHAP 배열은 개인정보·용량 문제로 포함하지 않는다. 각 분석은 기본 재현 파이프라인과 동일한 5개 외부 fold를 사용하며, 이력 원천은 분석조건별로 명시한다.
 
 ## 분석 항목
 
@@ -26,23 +26,23 @@ C = 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000
 
 ### 개인 분리와 과거이력 포함 민감도
 
-`run_primarykey_history_factorial.py`는 미관측 개인 여부와 과거 이력 포함 여부에 따른 성능 차이를 비교한다. 논문 [표 7]은 다음 네 조건으로 구성한다.
+`run_primarykey_history_factorial.py`는 미관측 개인 여부와 과거 이력 가용성에 따른 성능 차이를 비교한다. 논문 [표 7]은 다음 세 조건으로 구성한다.
 
-- 개인 중복 허용, 이력 제외
-- 개인 중복 허용, 과거이력 포함: 기존 주 분석의 최종 결합모델
+- 주 중첩 교차검증, 이력 포함
+- 주 외부 fold, 이력 제외
 - PrimaryKey 완전분리, 이력 제외
-- PrimaryKey 완전분리, 과거이력 포함
 
-이력 제외 조건은 16개 이력 피처를 제거한 뒤 결측수 피처를 다시 계산한다. PrimaryKey 완전분리의 과거이력 포함 조건은 검증 대상자와 동일한 PrimaryKey의 엄격히 이전 검사기록을 이력 원천으로 사용하되, 해당 기록은 모델 적합자료에는 포함하지 않는다. 현재 [표 7]은 데이터셋에서 확인되는 과거 검사이력의 포함 여부를 비교하는 민감도 분석이며, 24개월 라벨 확정조건을 적용한 운영시점 분석은 포함하지 않는다.
+이력 제외 조건은 16개 이력 피처를 제거한 뒤 결측수 피처에서 해당 피처의 결측 기여분도 차감한다. 개인 중복 허용과 PrimaryKey 완전분리 조건에 동일한 21개 피처를 사용함으로써, 이력정보가 없는 조건에서 개인 분리 자체의 영향을 비교한다.
+
+PrimaryKey 완전분리에서 동일 개인의 엄격히 이전 기록을 별도 이력 원천으로 사용하는 조건도 보조 분석으로 보존한다. 이 결과는 검증자료의 이력 가용성이 주 평가와 다르므로 최종 논문의 [표 7]에는 포함하지 않는다. 이 보조조건까지 실행하려면 큐 명령에 `-IncludeSupplementaryHistory`를 추가한다.
 
 주요 결과는 다음과 같다.
 
 | Condition | Score | AUC | PR-AUC |
 |---|---:|---:|---:|
-| Individual-overlap CV, history excluded | 0.169473 | 0.674953 | 0.056860 |
-| Individual-overlap CV, prior history | 0.146790 | 0.719737 | 0.158234 |
+| Main nested CV, history included | 0.146790 | 0.719737 | 0.158234 |
+| Main outer folds, history excluded | 0.169473 | 0.674953 | 0.056860 |
 | PrimaryKey-disjoint CV, history excluded | 0.169843 | 0.674315 | 0.056717 |
-| PrimaryKey-disjoint CV, prior history | 0.142741 | 0.728127 | 0.175941 |
 
 ### 5-fold SHAP 해석과 순위 안정성
 
@@ -68,6 +68,13 @@ PowerShell -ExecutionPolicy Bypass -File revision/run_primarykey_history_factori
 python revision/run_primarykey_history_factorial.py --condition summarize
 python build_manuscript_artifacts.py
 python revision/run_shap_fold_stability.py
+```
+
+PrimaryKey 완전분리의 보조 이력조건까지 실행하는 명령은 다음과 같다.
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File revision/run_primarykey_history_factorial_queue.ps1 -IncludeSupplementaryHistory
+python revision/run_primarykey_history_factorial.py --condition summarize
 ```
 
 별도 작업경로를 사용하는 경우 기본 파이프라인과 동일하게 환경변수를 지정한다.
@@ -109,10 +116,10 @@ python revision/run_shap_fold_stability.py --force
 
 ### 개인 분리와 과거이력
 
-- `tables/table_revision_table7_factorial_proposed.csv`: 논문 [표 7]의 네 조건
+- `tables/table_revision_table7_factorial_proposed.csv`: 논문 [표 7]의 세 조건
 - `tables/table_revision_primarykey_history_factorial.csv`: fold 평균과 표준편차를 포함한 상세 결과
 - `tables/table_revision_primarykey_history_factorial_contrasts.csv`: 조건 간 성능 차이
-- `tables/primarykey_history_factorial_verification.json`: 저장 예측값을 이용한 행 수·중복·지표 재검산
+- `tables/primarykey_history_factorial_verification.json`: [표 7] 신규 조건의 행 수·중복·지표 재검산
 
 ## 그림
 
