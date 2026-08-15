@@ -1,6 +1,6 @@
 # 최종 논문 자원 정리·검증 기록
 
-검증 기준일: 2026-08-13
+검증 기준일: 2026-08-15
 
 ## 1. 검증 기준 원고
 
@@ -17,7 +17,7 @@ PDF는 읽기 전용으로 대조했으며 수정하지 않았다. 공개 자원
 | 번호 | 최종 파일 | 픽셀 크기 | 생성·편집 자원 |
 |---|---|---:|---|
 | 그림 1 | `figures/Figure_1_Exploratory_Data_Analysis_v18_corrected.png` | 4662×3516 | `create_figure1.py` |
-| 그림 2 | `figures/Figure_2_Data_Analysis_and_Interpretation_Process_EN.png` | 3210×3480 | 편집용 SVG |
+| 그림 2 | `figures/Figure_2_Data_Analysis_and_Interpretation_Process_EN.png` | 4797×1888 | 가로형 최종 PNG |
 | 그림 3 | `figures/Figure_3_SHAP_VotingClassifier_300dpi.png` | 2730×4480 | `revision/run_shap_fold_stability.py` |
 | 그림 4 | `figures/Figure_4_Reliability_Adaptive10Bins_300dpi.png` | 3119×1320 | `make_reliability_figure.py` |
 
